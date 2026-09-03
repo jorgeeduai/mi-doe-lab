@@ -1,0 +1,189 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{ nombre_programa }}</title>
+<link rel="stylesheet" href="/static/estilo.css">
+</head>
+<body>
+
+<header>
+  <div class="marca">
+    <h1>{{ nombre_programa }}</h1>
+    <p class="sub">Q2003B · Diseño de Experimentos · construido por su autor, pieza por pieza</p>
+  </div>
+  <div class="tablero">
+    <div class="medidor">
+      <span class="num">{{ piezas|length }}<span class="de">/{{ total_piezas }}</span></span>
+      <span class="etiqueta">piezas conectadas</span>
+    </div>
+    <div class="medidor {{ 'on' if asistente_conectado and asistente_con_llave else 'off' }}">
+      <span class="foco"></span>
+      <span class="etiqueta">asistente</span>
+    </div>
+  </div>
+</header>
+
+<main>
+  <section class="columna-analisis">
+    <h2>Análisis</h2>
+    <div class="tarjetas">
+      {% for p in piezas %}
+      <article class="tarjeta {{ 'incompleta' if not p.lista }}" data-clave="{{ p.clave }}">
+        <div class="tarjeta-encabezado">
+          <h3>{{ p.nombre }}</h3>
+          <span class="chip">{{ p.sesion }}</span>
+        </div>
+        <p class="pregunta">“{{ p.pregunta }}”</p>
+        {% if p.formato %}
+        <details class="formato">
+          <summary>formato de datos</summary>
+          <p>{{ p.formato.espera }}</p>
+          <pre>{{ p.formato.ejemplo }}</pre>
+        </details>
+        {% endif %}
+        {% if p.lista %}
+        <label>Datos
+          <select class="sel-csv">
+            {% for c in csvs %}
+            <option value="{{ c }}" {{ 'selected' if ('datos/' + c) == p.csv_ejemplo }}>{{ c }}</option>
+            {% endfor %}
+          </select>
+        </label>
+        <label>Argumentos extra <span class="opcional">(opcional, p. ej. A:C)</span>
+          <input class="inp-extra" type="text" placeholder="">
+        </label>
+        <button class="btn-correr">Correr análisis</button>
+        {% else %}
+        <p class="aviso">Le falta: {{ p.falta|join(', ') }}. Revisa su bloque en <code>registro.py</code>.</p>
+        {% endif %}
+      </article>
+      {% endfor %}
+
+      {% for _ in range(total_piezas - piezas|length) %}
+      <article class="tarjeta vacia">
+        <h3>Espacio libre</h3>
+        <p>Aquí entra una de tus piezas.<br>Conéctala en <code>registro.py</code> y recarga.</p>
+      </article>
+      {% endfor %}
+    </div>
+
+    <div class="subir">
+      <label class="btn-subir">Subir otro CSV a <code>datos/</code>
+        <input id="archivo-csv" type="file" accept=".csv" hidden>
+      </label>
+      <span id="subir-estado"></span>
+    </div>
+
+    <h2>Resultado</h2>
+    <div id="consola" class="consola"><span class="consola-vacia">Aquí aparece la salida de tu análisis, igual que en la Shell.</span></div>
+    <div id="galeria" class="galeria"></div>
+  </section>
+
+  <aside class="columna-chat">
+    <h2>Asistente</h2>
+    {% if asistente_conectado and asistente_con_llave %}
+    <p class="chat-nota">Conoce la salida del último análisis que corriste: pregúntale sobre <em>tus</em> números.</p>
+    <div id="chat" class="chat"></div>
+    <form id="chat-forma">
+      <input id="chat-texto" type="text" placeholder="¿Por qué mi factor B no es significativo?" autocomplete="off">
+      <button type="submit">Enviar</button>
+    </form>
+    {% else %}
+    <div class="chat-apagado">
+      <p>El asistente está apagado. Para encenderlo:</p>
+      <ol>
+        {% if not asistente_con_llave %}<li>Agrega <code>MINIMAX_API_KEY</code> en los Secrets de Replit (el candado).</li>{% endif %}
+        {% if not asistente_conectado %}<li>Pon <code>ASISTENTE_CONECTADO = True</code> en <code>registro.py</code>.</li>{% endif %}
+        <li>Recarga esta página.</li>
+      </ol>
+    </div>
+    {% endif %}
+  </aside>
+</main>
+
+<script>
+const consola = document.getElementById('consola');
+const galeria = document.getElementById('galeria');
+
+document.querySelectorAll('.tarjeta[data-clave] .btn-correr').forEach(boton => {
+  boton.addEventListener('click', async () => {
+    const tarjeta = boton.closest('.tarjeta');
+    const clave = tarjeta.dataset.clave;
+    const csv = tarjeta.querySelector('.sel-csv').value;
+    const extra = tarjeta.querySelector('.inp-extra').value;
+    boton.disabled = true;
+    boton.textContent = 'Corriendo…';
+    consola.textContent = 'python ' + clave + ' ' + csv + ' ' + extra + '\n…';
+    galeria.innerHTML = '';
+    try {
+      const r = await fetch('/correr', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({clave, csv, extra}),
+      });
+      const j = await r.json();
+      if (j.error) {
+        consola.textContent = j.error;
+      } else {
+        consola.textContent = j.salida;
+        (j.imagenes || []).forEach(src => {
+          const img = document.createElement('img');
+          img.src = src;
+          galeria.appendChild(img);
+        });
+      }
+    } catch (e) {
+      consola.textContent = 'No pude hablar con el servidor: ' + e;
+    }
+    boton.disabled = false;
+    boton.textContent = 'Correr análisis';
+  });
+});
+
+const archivoCsv = document.getElementById('archivo-csv');
+if (archivoCsv) archivoCsv.addEventListener('change', async () => {
+  const forma = new FormData();
+  forma.append('archivo', archivoCsv.files[0]);
+  const r = await fetch('/subir', {method: 'POST', body: forma});
+  const j = await r.json();
+  document.getElementById('subir-estado').textContent = j.ok ? 'Subido: ' + j.nombre + ' (recarga la página)' : j.error;
+});
+
+const chatForma = document.getElementById('chat-forma');
+const historial = [];
+if (chatForma) chatForma.addEventListener('submit', async (ev) => {
+  ev.preventDefault();
+  const caja = document.getElementById('chat-texto');
+  const texto = caja.value.trim();
+  if (!texto) return;
+  caja.value = '';
+  agregarBurbuja('tu', texto);
+  historial.push({role: 'user', content: texto});
+  const pensando = agregarBurbuja('bot', '…');
+  try {
+    const r = await fetch('/preguntar', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({mensajes: historial}),
+    });
+    const j = await r.json();
+    pensando.textContent = j.error ? j.error : j.respuesta;
+    if (!j.error) historial.push({role: 'assistant', content: j.respuesta});
+  } catch (e) {
+    pensando.textContent = 'No pude hablar con el servidor: ' + e;
+  }
+});
+
+function agregarBurbuja(quien, texto) {
+  const div = document.createElement('div');
+  div.className = 'burbuja ' + quien;
+  div.textContent = texto;
+  document.getElementById('chat').appendChild(div);
+  div.scrollIntoView();
+  return div;
+}
+</script>
+</body>
+</html>
