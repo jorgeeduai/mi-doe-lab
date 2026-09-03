@@ -95,5 +95,5 @@ Cada lote corrió una réplica completa del 2³, en orden aleatorio.
 | La página da error al recargar | Falta una coma o una comilla en `registro.py` (revisa la Shell) |
 | La tarjeta sale naranja | Quedó un hueco `____` sin completar, o la ruta del script/CSV está mal escrita |
 | El chat dice que no encuentra la llave | El Secret no se llama exactamente `MINIMAX_API_KEY`, o falta reiniciar `python app.py` |
-| El resultado dice "EL FORMATO ... NO SIRVE" | No es una falla: el inspector (`piezas/formato.py`) revisó tu CSV antes de correr y te está diciendo qué arreglar. Cada tarjeta trae su ficha "formato de datos" con un ejemplo |
+| El resultado dice "EL FORMATO ... NO SIRVE" | Es el inspector (`piezas/formato.py`), que revisó tu CSV antes de correr y te dice qué arreglar. Cada tarjeta trae su ficha "formato de datos" con un ejemplo |
 | El análisis marca error | Corre el script a mano en la Shell (`python piezas/xxx.py datos/yyy.csv`) y lee el mensaje completo |
