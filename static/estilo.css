@@ -159,6 +159,86 @@ code { font-family: var(--mono); font-size: 0.92em; color: var(--naranja); }
 .btn-subir:hover { color: var(--texto); border-color: var(--azul); }
 #subir-estado { font-size: 12px; color: var(--verde); }
 
+/* ---------- el disenador ---------- */
+[hidden] { display: none !important; }
+
+.disenador {
+  margin-top: 14px;
+  background: var(--panel);
+  border: 1px solid var(--panel-borde);
+  border-radius: 14px;
+  padding: 14px 16px;
+}
+
+.disenador > summary {
+  font-size: 13px; color: var(--azul); cursor: pointer; list-style: none;
+  font-weight: 600; letter-spacing: 0.02em;
+}
+.disenador > summary::-webkit-details-marker { display: none; }
+.disenador > summary::before { content: "▸ "; }
+.disenador[open] > summary::before { content: "▾ "; }
+
+.disenador-cuerpo { display: flex; flex-direction: column; gap: 14px; margin-top: 12px; }
+.disenador-nota { margin: 0; font-size: 12.5px; color: var(--texto-suave); line-height: 1.5; }
+
+.d-tipos { display: flex; flex-wrap: wrap; gap: 8px 22px; }
+.d-radio { font-size: 13px; color: var(--texto); cursor: pointer; }
+.d-radio input { margin-right: 6px; accent-color: var(--azul); }
+
+.d-tabla-envoltura { overflow-x: auto; }
+.d-tabla { border-collapse: collapse; width: 100%; min-width: 320px; }
+.d-tabla th {
+  text-align: left; font-size: 11px; font-weight: 500;
+  color: var(--texto-suave); text-transform: uppercase; letter-spacing: 0.06em;
+  padding: 0 6px 6px 0;
+}
+.d-tabla td { padding: 0 6px 6px 0; }
+.d-tabla th:last-child, .d-tabla td:last-child { width: 32px; padding-right: 0; }
+
+.d-tabla input,
+.d-opciones input,
+.d-generar input {
+  width: 100%; min-width: 0; padding: 7px 9px;
+  background: var(--fondo); color: var(--texto);
+  border: 1px solid var(--panel-borde); border-radius: 8px;
+  font-size: 13px;
+}
+.d-opciones label, .d-generar label { font-size: 12px; color: var(--texto-suave); display: block; }
+.d-opciones input[type="number"] { max-width: 90px; }
+
+.btn-quitar {
+  width: 30px; height: 30px; line-height: 1;
+  background: transparent; color: var(--texto-suave);
+  border: 1px solid var(--panel-borde); border-radius: 8px;
+  font-size: 15px; cursor: pointer;
+}
+.btn-quitar:hover:not(:disabled) { color: var(--rojo); border-color: var(--rojo); }
+.btn-quitar:disabled { opacity: 0.3; cursor: default; }
+
+.btn-chico {
+  align-self: flex-start; margin-top: 2px; padding: 6px 12px;
+  background: transparent; color: var(--azul);
+  border: 1px dashed var(--panel-borde); border-radius: 8px;
+  font-size: 12.5px; cursor: pointer;
+}
+.btn-chico:hover:not(:disabled) { border-color: var(--azul); }
+.btn-chico:disabled { opacity: 0.4; cursor: default; }
+
+.d-opciones {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 10px 22px;
+  margin-top: 12px;
+}
+.d-casilla { display: flex; align-items: center; gap: 7px; cursor: pointer; }
+.d-casilla input { width: auto; accent-color: var(--azul); }
+
+.d-generar { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 12px; }
+.d-generar label { flex: 1 1 240px; }
+.d-generar .btn-correr { margin-top: 0; padding: 9px 20px; }
+
+.d-descarga { margin: 0; display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 12px; }
+.d-descarga a { color: var(--naranja); font-size: 13px; font-weight: 600; }
+.d-aviso { font-size: 12px; color: var(--texto-suave); }
+
 /* ---------- consola y galeria ---------- */
 .consola {
   background: #0a0e16;

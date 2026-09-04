@@ -76,6 +76,70 @@
       <span id="subir-estado"></span>
     </div>
 
+    <details class="disenador">
+      <summary>Diseña tu experimento</summary>
+      <div class="disenador-cuerpo">
+        <p class="disenador-nota">
+          Antes de medir va el diseño. Describe aquí tu experimento y el programa te
+          escribe la matriz de corridas: en orden aleatorio, con los niveles escritos
+          con sus nombres reales y con la columna <code>respuesta</code> vacía, para
+          que la llenes con lo que midas en el laboratorio.
+        </p>
+
+        <div class="d-tipos">
+          <label class="d-radio"><input type="radio" name="d-tipo" value="factorial" checked>
+            Factorial 2<sup>k</sup> <span class="opcional">(varios factores, dos niveles cada uno)</span></label>
+          <label class="d-radio"><input type="radio" name="d-tipo" value="anova">
+            Un factor con varios niveles <span class="opcional">(para el ANOVA)</span></label>
+        </div>
+
+        <div id="d-panel-factorial">
+          <div class="d-tabla-envoltura">
+            <table class="d-tabla">
+              <thead>
+                <tr><th>Factor</th><th>Nivel −</th><th>Nivel +</th><th></th></tr>
+              </thead>
+              <tbody id="d-factores"></tbody>
+            </table>
+          </div>
+          <button type="button" id="d-agregar" class="btn-chico">+ agregar factor</button>
+          <div class="d-opciones">
+            <label>Réplicas
+              <input id="d-replicas" type="number" min="1" max="4" value="1">
+            </label>
+            <label class="d-casilla"><input id="d-bloques" type="checkbox">
+              Corrió en bloques <span class="opcional">(cada bloque, una réplica completa)</span></label>
+            <label class="d-casilla"><input id="d-mitad" type="checkbox">
+              Solo alcanza la mitad de las corridas <span class="opcional">(media fracción)</span></label>
+          </div>
+        </div>
+
+        <div id="d-panel-anova" hidden>
+          <div class="d-opciones">
+            <label>Nombre del factor
+              <input id="d-factor-nombre" type="text" placeholder="catalizador">
+            </label>
+            <label>Niveles, separados por comas
+              <input id="d-niveles" type="text" placeholder="A, B, C">
+            </label>
+            <label>Mediciones por nivel
+              <input id="d-mediciones" type="number" min="2" max="10" value="3">
+            </label>
+          </div>
+        </div>
+
+        <div class="d-generar">
+          <label>Nombre del experimento
+            <input id="d-nombre" type="text" placeholder="síntesis de AgNP">
+          </label>
+          <button type="button" id="d-generar" class="btn-correr">Generar mi CSV</button>
+        </div>
+
+        <div id="d-consola" class="consola" hidden></div>
+        <p id="d-descarga" class="d-descarga" hidden></p>
+      </div>
+    </details>
+
     <h2>Resultado</h2>
     <div id="consola" class="consola"><span class="consola-vacia">Aquí aparece la salida de tu análisis, igual que en la Shell.</span></div>
     <div id="galeria" class="galeria"></div>
@@ -150,6 +214,127 @@ if (archivoCsv) archivoCsv.addEventListener('change', async () => {
   const j = await r.json();
   document.getElementById('subir-estado').textContent = j.ok ? 'Subido: ' + j.nombre + ' (recarga la página)' : j.error;
 });
+
+// ---------- el diseñador: describe el experimento, baja la matriz ----------
+const dFactores = document.getElementById('d-factores');
+const dReplicas = document.getElementById('d-replicas');
+const dBloques = document.getElementById('d-bloques');
+const dMitad = document.getElementById('d-mitad');
+const dConsola = document.getElementById('d-consola');
+const dDescarga = document.getElementById('d-descarga');
+const LETRAS = ['A', 'B', 'C', 'D', 'E', 'F'];
+
+function renumerarFactores() {
+  [...dFactores.children].forEach((tr, i) => {
+    tr.querySelector('.f-nombre').placeholder = LETRAS[i];
+  });
+  dFactores.querySelectorAll('.btn-quitar').forEach(b => {
+    b.disabled = dFactores.children.length <= 2;
+  });
+  document.getElementById('d-agregar').disabled = dFactores.children.length >= 6;
+}
+
+function agregarFactor() {
+  if (dFactores.children.length >= 6) return;
+  const tr = document.createElement('tr');
+  tr.innerHTML =
+    '<td><input class="f-nombre" type="text"></td>' +
+    '<td><input class="f-menos" type="text" placeholder="bajo"></td>' +
+    '<td><input class="f-mas" type="text" placeholder="alto"></td>' +
+    '<td><button type="button" class="btn-quitar" title="quitar este factor">×</button></td>';
+  tr.querySelector('.btn-quitar').addEventListener('click', () => {
+    if (dFactores.children.length <= 2) return;
+    tr.remove();
+    renumerarFactores();
+  });
+  dFactores.appendChild(tr);
+  renumerarFactores();
+}
+
+if (dFactores) {
+  agregarFactor();
+  agregarFactor();
+
+  document.getElementById('d-agregar').addEventListener('click', agregarFactor);
+
+  document.querySelectorAll('input[name="d-tipo"]').forEach(radio => {
+    radio.addEventListener('change', () => {
+      const esFactorial = radio.value === 'factorial';
+      document.getElementById('d-panel-factorial').hidden = !esFactorial;
+      document.getElementById('d-panel-anova').hidden = esFactorial;
+    });
+  });
+
+  // Las dos casillas se estorban: un bloque es una réplica completa, y la
+  // media fracción existe para correr una sola vez cada combinación.
+  dBloques.addEventListener('change', () => {
+    if (!dBloques.checked) return;
+    dMitad.checked = false;
+    if (Number(dReplicas.value) < 2) dReplicas.value = 2;
+  });
+  dMitad.addEventListener('change', () => {
+    if (!dMitad.checked) return;
+    dBloques.checked = false;
+    dReplicas.value = 1;
+  });
+
+  document.getElementById('d-generar').addEventListener('click', async (ev) => {
+    const boton = ev.currentTarget;
+    const tipo = document.querySelector('input[name="d-tipo"]:checked').value;
+    const cuerpo = {tipo, nombre: document.getElementById('d-nombre').value};
+    if (tipo === 'factorial') {
+      cuerpo.factores = [...dFactores.children].map(tr => ({
+        nombre: tr.querySelector('.f-nombre').value,
+        menos: tr.querySelector('.f-menos').value,
+        mas: tr.querySelector('.f-mas').value,
+      }));
+      cuerpo.replicas = dReplicas.value;
+      cuerpo.bloques = dBloques.checked;
+      cuerpo.mitad = dMitad.checked;
+    } else {
+      cuerpo.factor = {
+        nombre: document.getElementById('d-factor-nombre').value,
+        niveles: document.getElementById('d-niveles').value,
+      };
+      cuerpo.mediciones_por_nivel = document.getElementById('d-mediciones').value;
+    }
+
+    boton.disabled = true;
+    dDescarga.hidden = true;
+    dConsola.hidden = false;
+    dConsola.textContent = 'Diseñando…';
+    try {
+      const r = await fetch('/disenar', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify(cuerpo),
+      });
+      const j = await r.json();
+      if (j.error) {
+        dConsola.textContent = j.error;
+      } else {
+        let texto = j.notas.map(n => '· ' + n).join('\n');
+        texto += '\n\n' + j.archivo + '\n' + j.preview;
+        if (j.corridas > 7) texto += '\n… (' + j.corridas + ' corridas en total)';
+        dConsola.textContent = texto;
+        const enlace = document.createElement('a');
+        enlace.href = '/plantilla/' + encodeURIComponent(j.archivo);
+        enlace.setAttribute('download', j.archivo);
+        enlace.textContent = 'Descargar ' + j.archivo;
+        const aviso = document.createElement('span');
+        aviso.className = 'd-aviso';
+        aviso.textContent = 'guardado en datos/: recarga la página para verlo en los selectores';
+        dDescarga.textContent = '';
+        dDescarga.appendChild(enlace);
+        dDescarga.appendChild(aviso);
+        dDescarga.hidden = false;
+      }
+    } catch (e) {
+      dConsola.textContent = 'No pude hablar con el servidor: ' + e;
+    }
+    boton.disabled = false;
+  });
+}
 
 const chatForma = document.getElementById('chat-forma');
 const historial = [];

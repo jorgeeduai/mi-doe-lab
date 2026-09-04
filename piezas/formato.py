@@ -73,7 +73,16 @@ def revisar(ruta_csv, clave):
                       % [c for c in columnas if c.strip() != c])
 
     incompletas = [c for c in columnas if datos[c].isna().any()]
-    if incompletas:
+    if incompletas == ['respuesta'] and datos['respuesta'].isna().all():
+        # El caso tipico y con arreglo obvio: el CSV que acaba de salir del
+        # disenador. Tiene la matriz completa y la respuesta vacia porque el
+        # experimento todavia no se corre.
+        errores.append('Este CSV es una plantilla del disenador: trae la matriz '
+                       'del diseno y la columna "respuesta" completamente vacia. '
+                       'Corre el experimento, escribe lo que midas en cada '
+                       'renglon (en el editor de Replit o en Excel) y entonces '
+                       'analizalo.')
+    elif incompletas:
         errores.append('Hay celdas vacias en: %s. Cada renglon lleva todos sus datos.'
                        % ', '.join(incompletas))
 

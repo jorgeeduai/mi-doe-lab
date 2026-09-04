@@ -13,18 +13,23 @@
 #      y captura lo que imprime y las graficas PNG que genera.
 #   3. Cuando le escribes al asistente, le adjunta la salida del
 #      ultimo analisis: por eso puede opinar sobre TUS resultados.
+#   4. En "Disena tu experimento" no analiza nada: le pide la matriz a
+#      piezas/disenar.py y la guarda en datos/ como un CSV con la
+#      columna 'respuesta' vacia, listo para llenarse en el laboratorio.
 #
 # Correr:  python app.py   (Replit abre la vista web solo)
 # ============================================================
 
 import importlib
 import os
+import re
 import shutil
 import subprocess
 import sys
 import time
+import unicodedata
 
-from flask import Flask, jsonify, render_template, request
+from flask import Flask, jsonify, render_template, request, send_file
 
 import registro
 
@@ -153,6 +158,56 @@ def subir():
     nombre = os.path.basename(archivo.filename).replace(' ', '_')
     archivo.save(os.path.join(CARPETA_DATOS, nombre))
     return jsonify({'ok': True, 'nombre': nombre})
+
+
+def nombre_de_archivo(nombre):
+    """El nombre que escribio el usuario, vuelto nombre de archivo:
+    'Sintesis de AgNP (piloto)' -> 'diseno_sintesis-de-agnp-piloto.csv'.
+    Si ese ya existe, le pone -2, -3... para no pisar un diseno anterior."""
+    limpio = unicodedata.normalize('NFKD', nombre)
+    limpio = limpio.encode('ascii', 'ignore').decode('ascii').lower()
+    limpio = re.sub(r'[^a-z0-9]+', '-', limpio).strip('-')
+    base = 'diseno_' + (limpio or 'sin-nombre')
+    candidato = base + '.csv'
+    numero = 2
+    while os.path.exists(os.path.join(CARPETA_DATOS, candidato)):
+        candidato = '%s-%d.csv' % (base, numero)
+        numero += 1
+    return candidato
+
+
+@app.route('/disenar', methods=['POST'])
+def disenar():
+    # La pieza se importa aqui adentro, no arriba: asi el programa
+    # arranca aunque el archivo no este, igual que con el asistente.
+    from piezas import disenar as disenador
+    descripcion = request.get_json(force=True)
+    try:
+        columnas, renglones, notas = disenador.construir(descripcion)
+    except ValueError as error:
+        return jsonify({'error': str(error)}), 400
+
+    texto = disenador.a_csv(columnas, renglones)
+    nombre = nombre_de_archivo(str(descripcion.get('nombre', '')))
+    with open(os.path.join(CARPETA_DATOS, nombre), 'w', encoding='utf-8') as archivo:
+        archivo.write(texto)
+
+    return jsonify({
+        'archivo': nombre,
+        'corridas': len(renglones),
+        'notas': notas,
+        'preview': '\n'.join(texto.split('\n')[:8]),
+    })
+
+
+@app.route('/plantilla/<archivo>')
+def plantilla(archivo):
+    """Bajar a la computadora un CSV de datos/ (la plantilla recien hecha)."""
+    nombre = os.path.basename(archivo)
+    ruta = os.path.abspath(os.path.join(CARPETA_DATOS, nombre))
+    if not nombre.endswith('.csv') or not os.path.exists(ruta):
+        return jsonify({'error': 'No encuentro %s en datos/.' % nombre}), 404
+    return send_file(ruta, as_attachment=True)
 
 
 @app.route('/preguntar', methods=['POST'])

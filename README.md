@@ -17,7 +17,8 @@ mi-doe-lab/
 │   ├── fraccionado.py  S6      generadores, alias y resolución
 │   ├── bloques.py      S7      el bloque separado del error
 │   ├── asistente.py    S8      el chatbot que lee tus resultados
-│   └── formato.py      S8      el inspector: revisa tu CSV antes de correr
+│   ├── formato.py      S8      el inspector: revisa tu CSV antes de correr
+│   └── disenar.py      S8      el diseñador: escribe la matriz de un experimento nuevo
 ├── datos/          los CSV del curso (y los que tú subas)
 ├── templates/ y static/   la interfaz web
 └── requirements.txt
@@ -87,6 +88,22 @@ tamaño de partícula (nm) **más chico** posible. Los factores, en codificado:
 | bloque | lote de precursor | lote1 | lote2 |
 
 Cada lote corrió una réplica completa del 2³, en orden aleatorio.
+
+## Diseña tu propio experimento
+
+La sección **Diseña tu experimento** cubre el paso que va antes de medir.
+Describes tu experimento (los factores con sus dos niveles, las réplicas, si vas
+a correr en bloques, o un solo factor con varios niveles) y el programa te
+escribe la matriz de corridas en `datos/`, en orden aleatorio y con la columna
+`respuesta` vacía.
+
+Esa columna vacía es tu plantilla. Llénala con lo que midas en el laboratorio,
+en el editor de Replit o bajando el CSV con el enlace de descarga y abriéndolo
+en Excel. Cuando esté llena, recarga la página, elige tu archivo en la tarjeta
+que le toque y córrela.
+
+Si la analizas antes de llenarla, el inspector de formato lo detecta y te dice
+que ese CSV todavía es una plantilla del diseñador.
 
 ## Si algo truena
 
