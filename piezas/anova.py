@@ -43,8 +43,11 @@ datos = pd.read_csv(sys.argv[1])
 if len(sys.argv) >= 4:
     factor, respuesta = sys.argv[2], sys.argv[3]
 else:
-    columnas_texto = [c for c in datos.columns if datos[c].dtype == object]
-    columnas_num = [c for c in datos.columns if datos[c].dtype != object]
+    # Que es texto y que es numero se pregunta con is_numeric_dtype, no
+    # comparando con object: pandas 3 le dio al texto su propio dtype 'str'
+    # y la comparacion vieja dejo de reconocerlo (cazado en clase, 4-sep-2026).
+    columnas_texto = [c for c in datos.columns if not pd.api.types.is_numeric_dtype(datos[c])]
+    columnas_num = [c for c in datos.columns if pd.api.types.is_numeric_dtype(datos[c])]
     if not columnas_texto or not columnas_num:
         print('No encuentro una columna de texto (factor) y una numerica (respuesta).')
         print('Dimelas tu: python piezas/anova.py %s factor respuesta' % sys.argv[1])

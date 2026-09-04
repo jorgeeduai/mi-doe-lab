@@ -87,8 +87,10 @@ def revisar(ruta_csv, clave):
                        % ', '.join(incompletas))
 
     if clave == 'anova':
-        de_texto = [c for c in columnas if datos[c].dtype == object]
-        numericas = [c for c in columnas if datos[c].dtype != object]
+        # is_numeric_dtype y no "== object": en pandas 3 el texto tiene su
+        # propio dtype 'str' y la comparacion vieja no lo reconocia.
+        de_texto = [c for c in columnas if not pd.api.types.is_numeric_dtype(datos[c])]
+        numericas = [c for c in columnas if pd.api.types.is_numeric_dtype(datos[c])]
         if not de_texto:
             errores.append('No hay columna de texto para el grupo (el factor). '
                            'Ejemplo: una columna "catalizador" con A, B, C.')
@@ -108,7 +110,7 @@ def revisar(ruta_csv, clave):
     if 'respuesta' not in columnas:
         errores.append('Falta la columna "respuesta" (asi, con ese nombre exacto). '
                        'Columnas encontradas: %s.' % ', '.join(columnas))
-    elif datos['respuesta'].dtype == object:
+    elif not pd.api.types.is_numeric_dtype(datos['respuesta']):
         errores.append('La columna "respuesta" trae texto: tiene que ser numerica.')
 
     factores = [c for c in columnas if c.lower() not in NO_SON_FACTORES]
