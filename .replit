@@ -1,0 +1,11 @@
+run = ["python3", "app.py"]
+entrypoint = "app.py"
+modules = ["python-3.12", "web"]
+
+[nix]
+channel = "stable-25_05"
+packages = ["cairo", "ffmpeg-full", "freetype", "ghostscript", "glibcLocales", "gobject-introspection", "gtk3", "libxcrypt", "pkg-config", "qhull", "tcl", "tk", "xsimd"]
+
+[[ports]]
+localPort = 3000
+externalPort = 80

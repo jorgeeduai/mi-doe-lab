@@ -17,7 +17,7 @@
 #   csv_ejemplo  un CSV de datos/ con el que esta pieza sabe trabajar
 # ============================================================
 
-NOMBRE_DEL_PROGRAMA = 'Mi DOE Lab'   # bautiza tu programa: este es tu titulo
+NOMBRE_DEL_PROGRAMA = 'Mi DOE Lab'   # ponle nombre a tu programa: este es tu titulo
 
 PIEZAS = [
 

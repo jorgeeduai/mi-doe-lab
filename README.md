@@ -26,15 +26,21 @@ mi-doe-lab/
 
 ## Paso 0 — arranca el motor
 
-En la Shell de Replit:
+En la Shell de Replit, una sola vez:
 
 ```
 pip install -r requirements.txt
-python app.py
 ```
 
-Replit abre la vista web. Vas a ver **1 pieza conectada de 4** (el ANOVA ya
-viene puesto, para que veas el patrón) y tres espacios libres.
+Cuando termine, presiona **Run** (el botón verde de arriba): el programa
+arranca y el Webview se abre solo. Vas a ver **1 pieza conectada de 4** (el
+ANOVA ya viene puesto, para que veas el patrón) y tres espacios libres.
+
+**Los dos carriles de Replit, que no se cruzan:** lo que arranca el botón
+**Run** vive en la pestaña **Console** y se detiene ahí, con el botón rojo de
+la esquina. Lo que arrancas a mano en la **Shell** (`python app.py`) se detiene
+en la Shell con `Ctrl+C`. Detén siempre en el carril donde arrancaste; si no,
+el siguiente arranque dirá "Address already in use".
 
 ## Paso 1 — prueba la pieza que ya está
 
@@ -57,10 +63,10 @@ Orden sugerido: **factorial** (S5) → **fraccionado** (S6) → **bloques** (S7)
 Pista: `fraccionado.py` y `bloques.py` aceptan argumentos extra (por ejemplo
 `A:C`), igual que cuando los corrías a mano.
 
-## Paso 5 — bautiza tu programa
+## Paso 5 — ponle nombre a tu programa
 
-En `registro.py`, cambia `NOMBRE_DEL_PROGRAMA`. Ya no es "el script de la
-clase": es tu software, ponle nombre.
+En `registro.py`, cambia `NOMBRE_DEL_PROGRAMA`. Es tu software, y desde ahora
+lleva tu nombre en la portada.
 
 ## Paso 6 — enciende el asistente
 
@@ -109,7 +115,8 @@ que ese CSV todavía es una plantilla del diseñador.
 
 | Síntoma | Causa típica |
 |---|---|
-| La página da error al recargar | Falta una coma o una comilla en `registro.py` (revisa la Shell) |
+| "Address already in use" al arrancar | Hay otro servidor vivo en el otro carril: detén con el botón rojo de Console (si fue Run) o con `Ctrl+C` en la Shell, y arranca de nuevo |
+| La página da error al recargar | Falta una coma o una comilla en `registro.py` (revisa la consola donde corre el programa) |
 | La tarjeta sale naranja | Quedó un hueco `____` sin completar, o la ruta del script/CSV está mal escrita |
 | El chat dice que no encuentra la llave | El Secret no se llama exactamente `MINIMAX_API_KEY`, o falta reiniciar `python app.py` |
 | El resultado dice "EL FORMATO ... NO SIRVE" | Es el inspector (`piezas/formato.py`), que revisó tu CSV antes de correr y te dice qué arreglar. Cada tarjeta trae su ficha "formato de datos" con un ejemplo |
