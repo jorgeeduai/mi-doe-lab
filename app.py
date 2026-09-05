@@ -13,6 +13,8 @@
 #      y captura lo que imprime y las graficas PNG que genera.
 #   3. Cuando le escribes al asistente, le adjunta la salida del
 #      ultimo analisis: por eso puede opinar sobre TUS resultados.
+#      Con que motor habla (Gemini o MiniMax) lo decide la llave que
+#      pusiste en los Secrets; eso se resuelve en piezas/asistente.py.
 #   4. En "Disena tu experimento" no analiza nada: le pide la matriz a
 #      piezas/disenar.py y la guarda en datos/ como un CSV con la
 #      columna 'respuesta' vacia, listo para llenarse en el laboratorio.
@@ -42,6 +44,16 @@ os.makedirs(CARPETA_SALIDAS, exist_ok=True)
 # La memoria del programa: la salida del ultimo analisis que corriste.
 # Es lo que el asistente recibe como contexto.
 ULTIMO = {'texto': None, 'pieza': None, 'csv': None}
+
+
+def motor_del_asistente():
+    """El nombre del motor que va a contestar (Gemini o MiniMax), o None
+    si no hay llave. La regla de cual toca vive en piezas/asistente.py."""
+    try:
+        from piezas import asistente
+        return asistente.motor()
+    except Exception:
+        return None
 
 
 def leer_registro():
@@ -80,7 +92,8 @@ def portada():
         piezas=piezas_con_estado(reg),
         total_piezas=4,  # anova, factorial, fraccionado, bloques
         asistente_conectado=reg.ASISTENTE_CONECTADO,
-        asistente_con_llave=bool(os.environ.get('MINIMAX_API_KEY')),
+        asistente_con_llave=bool(motor_del_asistente()),
+        asistente_motor=motor_del_asistente(),
         csvs=csvs,
     )
 

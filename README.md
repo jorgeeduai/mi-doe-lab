@@ -16,7 +16,7 @@ mi-doe-lab/
 │   ├── factorial.py    S5      efectos e interacciones de un 2^k
 │   ├── fraccionado.py  S6      generadores, alias y resolución
 │   ├── bloques.py      S7      el bloque separado del error
-│   ├── asistente.py    S8      el chatbot que lee tus resultados
+│   ├── asistente.py    S8      el chatbot que lee tus resultados (Gemini o MiniMax)
 │   ├── formato.py      S8      el inspector: revisa tu CSV antes de correr
 │   └── disenar.py      S8      el diseñador: escribe la matriz de un experimento nuevo
 ├── datos/          los CSV del curso (y los que tú subas)
@@ -70,13 +70,29 @@ lleva tu nombre en la portada.
 
 ## Paso 6 — enciende el asistente
 
+Tu asistente puede hablar con **dos motores distintos** y elige solo, según la
+llave que encuentre en los Secrets. Con una basta.
+
+- **Gemini — tu propia llave.** Entra a <https://aistudio.google.com/apikey> con
+  tu cuenta de Google, crea una llave y cópiala. Es tuya, y te sigue sirviendo
+  cuando el curso termine.
+- **MiniMax — la llave del profesor.** La que reparte en clase, cuando toca.
+
 1. En Replit, abre **Secrets** (el candado de la barra izquierda).
-2. Agrega la llave: nombre `MINIMAX_API_KEY`, valor el que te da el profesor.
-   **Nunca la pegues en el código.**
+2. Agrega la llave: nombre `GEMINI_API_KEY` (o `MINIMAX_API_KEY` si usas la del
+   profesor), valor el que copiaste. **Nunca la pegues en el código.**
 3. En `registro.py`, pon `ASISTENTE_CONECTADO = True`. Recarga.
+
+Arriba del chat aparece con qué motor estás hablando. Si pones las dos llaves
+gana Gemini; para forzar la otra, agrega un Secret más: `PROVEEDOR` con valor
+`minimax`.
 
 Corre un análisis y pregúntale algo sobre **ese** resultado: el asistente
 recibe la salida de tu último análisis antes de contestar.
+
+**Vale la pena hacer la prueba con los dos motores:** la misma pregunta, sobre
+los mismos números, a dos modelos distintos. Si coinciden, tu lectura del
+análisis va firme; si no coinciden, la que manda es tu tabla, no el chat.
 
 ## Paso 7 — el estreno
 
@@ -118,6 +134,7 @@ que ese CSV todavía es una plantilla del diseñador.
 | "Address already in use" al arrancar | Hay otro servidor vivo en el otro carril: detén con el botón rojo de Console (si fue Run) o con `Ctrl+C` en la Shell, y arranca de nuevo |
 | La página da error al recargar | Falta una coma o una comilla en `registro.py` (revisa la consola donde corre el programa) |
 | La tarjeta sale naranja | Quedó un hueco `____` sin completar, o la ruta del script/CSV está mal escrita |
-| El chat dice que no encuentra la llave | El Secret no se llama exactamente `MINIMAX_API_KEY`, o falta reiniciar `python app.py` |
+| El chat dice que no encuentra la llave | El Secret no se llama exactamente `GEMINI_API_KEY` (o `MINIMAX_API_KEY`), o falta reiniciar `python app.py` |
+| El chat dice `No module named 'google'` | Llegó código nuevo con `git pull`: vuelve a correr `pip install -r requirements.txt` |
 | El resultado dice "EL FORMATO ... NO SIRVE" | Es el inspector (`piezas/formato.py`), que revisó tu CSV antes de correr y te dice qué arreglar. Cada tarjeta trae su ficha "formato de datos" con un ejemplo |
 | El análisis marca error | Corre el script a mano en la Shell (`python piezas/xxx.py datos/yyy.csv`) y lee el mensaje completo |

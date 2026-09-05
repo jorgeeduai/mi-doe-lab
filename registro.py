@@ -65,6 +65,8 @@ PIEZAS = [
 ]
 
 # --- PIEZA 5: el asistente ------------------------------------------
-# El chat se enciende cuando esto diga True Y la llave MINIMAX_API_KEY
-# este en los Secrets de Replit (el candado de la barra izquierda).
+# El chat se enciende cuando esto diga True Y haya una llave en los
+# Secrets de Replit (el candado de la barra izquierda): GEMINI_API_KEY
+# para hablar con Gemini, o MINIMAX_API_KEY para hablar con MiniMax.
+# El mismo programa, otro motor: lo decide la llave, no el codigo.
 ASISTENTE_CONECTADO = False

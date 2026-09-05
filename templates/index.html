@@ -148,7 +148,7 @@
   <aside class="columna-chat">
     <h2>Asistente</h2>
     {% if asistente_conectado and asistente_con_llave %}
-    <p class="chat-nota">Conoce la salida del último análisis que corriste: pregúntale sobre <em>tus</em> números.</p>
+    <p class="chat-nota">Motor: <strong>{{ asistente_motor }}</strong>. Conoce la salida del último análisis que corriste: pregúntale sobre <em>tus</em> números.</p>
     <div id="chat" class="chat"></div>
     <form id="chat-forma">
       <input id="chat-texto" type="text" placeholder="¿Por qué mi factor B no es significativo?" autocomplete="off">
@@ -158,7 +158,7 @@
     <div class="chat-apagado">
       <p>El asistente está apagado. Para encenderlo:</p>
       <ol>
-        {% if not asistente_con_llave %}<li>Agrega <code>MINIMAX_API_KEY</code> en los Secrets de Replit (el candado).</li>{% endif %}
+        {% if not asistente_con_llave %}<li>Agrega tu llave en los Secrets de Replit (el candado): <code>GEMINI_API_KEY</code> si usas Gemini, o <code>MINIMAX_API_KEY</code> si usas la de MiniMax.</li>{% endif %}
         {% if not asistente_conectado %}<li>Pon <code>ASISTENTE_CONECTADO = True</code> en <code>registro.py</code>.</li>{% endif %}
         <li>Recarga esta página.</li>
       </ol>
